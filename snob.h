@@ -23,6 +23,8 @@ int cmd_await(ProcessID pid);
 void rebuild_thyself(int argc, char** argv, const char* path_input);
 int rebuild_needed(const char* path_input, const char* path_output);
 
+int init_ignored_dir(char* path_dir, char* path_ignore, int force);
+
 #define SHIFT(argc, argv) (--(argc), *(argv)++)
 
 #define REBUILD_THYSELF(ARGC, ARGV) rebuild_thyself((ARGC), (ARGV), __FILE__)
@@ -179,6 +181,34 @@ int cmd_await(ProcessID pid) {
             return 0;
         }
     }
+    return 1;
+}
+
+int init_ignored_dir(char* path_dir, char* path_ignore, int force) {
+    if (force) remove(path_dir);
+    if (mkdir(path_dir, 0755) < 0) {
+        if (errno == EEXIST) { return 1; }
+        printf("[ERROR] could not create directory `%s`: %s\n", path_dir, strerror(errno));
+    }
+
+    int result = 1;
+
+    char buf[1024] = {0};
+    snprintf(buf, 1024, "%s/%s", path_dir, path_ignore);
+    FILE *f = fopen(buf, "wb");
+    if (f == NULL) {
+        printf("[ERROR] Could not open file %s for writing: %s\n", buf, strerror(errno));
+        goto defer;
+    }
+
+    size_t n = fwrite("*", 1, 1, f);
+    if (ferror(f)) {
+        printf("[ERROR] Could not write into file %s: %s\n", buf, strerror(errno));
+        goto defer;
+    }
+
+defer:
+    if (f) fclose(f);
     return 1;
 }
 
