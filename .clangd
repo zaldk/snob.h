@@ -1,0 +1,11 @@
+Diagnostics:
+  Suppress:
+    - bool_redeclaration
+    - macro-redefined
+    - misc-definitions-in-headers
+    - writable-strings
+    - unused-includes
+Index:
+  StandardLibrary: No
+CompileFlags:
+  Add: [ -xc, -DNOB_IMPLEMENTATION, -DSNOB_IMPLEMENTATION ]
